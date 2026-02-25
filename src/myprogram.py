@@ -40,45 +40,67 @@ class MyModel:
                 f.write('{}\n'.format(p))
 
     def run_train(self, data, work_dir):
-        # your code here
-        self.k = 2  # context length
+        self.k = 5
         self.counts = {}
 
+        PAD = "~"
+
         for line in data:
+            line = PAD * self.k + line
+
             for i in range(len(line) - self.k):
                 context = line[i:i+self.k]
                 next_char = line[i+self.k]
 
                 if context not in self.counts:
                     self.counts[context] = {}
+
                 self.counts[context][next_char] = (
                     self.counts[context].get(next_char, 0) + 1
                 )
-        pass
 
     def run_pred(self, data):
-        # your code here
         preds = []
-        all_chars = string.ascii_letters
+        PAD = "~"
+
         for inp in data:
-            # this model just predicts a random character each time
-            # top_guesses = [random.choice(all_chars) for _ in range(3)]
-            # preds.append(''.join(top_guesses))
+            inp = PAD * self.k + inp
 
-            context = inp[-self.k:] if len(inp) >= self.k else inp
+            prediction = None
 
-            if context in self.counts:
-                next_chars = sorted(
-                    self.counts[context].items(),
-                    key=lambda x: x[1],
-                    reverse=True
-                )
-                top3 = [c for c, _ in next_chars[:3]]
-            else:
-                # fallback: common characters -- this is used every time since we don't have training data rn
-                top3 = ['e', ' ', 'a']
+            # Backoff: try 5 → 4 → 3 → 2 → 1 grams
+            for k in range(self.k, 0, -1):
+                context = inp[-k:]
 
-            preds.append(''.join(top3))
+                matches = {
+                    ctx: nxt
+                    for ctx, nxt in self.counts.items()
+                    if ctx.endswith(context)
+                }
+
+                if matches:
+                    agg = {}
+
+                    for nxt_dict in matches.values():
+                        for c, cnt in nxt_dict.items():
+                            agg[c] = agg.get(c, 0) + cnt
+
+                    next_chars = sorted(
+                        agg.items(),
+                        key=lambda x: x[1],
+                        reverse=True
+                    )
+
+                    prediction = ''.join(
+                        [c for c, _ in next_chars[:3]]
+                    )
+                    break
+
+            if prediction is None:
+                prediction = "e a"
+
+            preds.append(prediction)
+
         return preds
 
     def save(self, work_dir):
