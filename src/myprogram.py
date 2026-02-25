@@ -4,6 +4,7 @@ import string
 import random
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import pickle
+import unicodedata
 
 
 class MyModel:
@@ -11,16 +12,36 @@ class MyModel:
     This is a starter model to get you started. Feel free to modify this file.
     """
 
+    # @classmethod
+    # def load_training_data(cls):
+    #     # your code here
+    #     # this particular model doesn't train
+    #     data = []
+    #     with open('src/training_data.txt', 'r', encoding='utf-8') as f:
+    #         for line in f:
+    #             line = line.rstrip('\n')  # remove newline but keep the text
+    #             if line:
+    #                 data.append(line)
+    #     return data
     @classmethod
-    def load_training_data(cls):
-        # your code here
-        # this particular model doesn't train
+    def load_training_data(cls, data_dir='src/train_data'):
         data = []
-        with open('src/training_data.txt', 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.rstrip('\n')  # remove newline but keep the text
-                if line:
-                    data.append(line)
+
+        # Loop over all .txt files in directory
+        for fname in os.listdir(data_dir):
+            if not fname.endswith('.txt'):
+                continue
+
+            file_path = os.path.join(data_dir, fname)
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    sentence = line.rstrip('\n')
+                    if sentence:
+                        sentence = unicodedata.normalize("NFC", sentence)
+                        data.append(sentence)
+
+        print(f"Loaded {len(data)} total sentences from {data_dir}")
         return data
 
     @classmethod
@@ -42,6 +63,13 @@ class MyModel:
     def run_train(self, data, work_dir):
         self.k = 5
         self.counts = {}
+        self.vocab = set()
+
+        PAD = "~"
+        
+        for line in data:
+            for ch in line:
+                self.vocab.add(ch)
 
         PAD = "~"
 
