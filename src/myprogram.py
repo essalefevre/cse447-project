@@ -12,17 +12,6 @@ class MyModel:
     This is a starter model to get you started. Feel free to modify this file.
     """
 
-    # @classmethod
-    # def load_training_data(cls):
-    #     # your code here
-    #     # this particular model doesn't train
-    #     data = []
-    #     with open('src/training_data.txt', 'r', encoding='utf-8') as f:
-    #         for line in f:
-    #             line = line.rstrip('\n')  # remove newline but keep the text
-    #             if line:
-    #                 data.append(line)
-    #     return data
     @classmethod
     def load_training_data(cls, data_dir='src/train_data'):
         data = []
@@ -60,76 +49,8 @@ class MyModel:
             for p in preds:
                 f.write('{}\n'.format(p))
 
-    # def run_train(self, data, work_dir):
-    #     self.k = 5
-    #     self.counts = {}
-    #     self.vocab = set()
+    # NEWEST VERSION 
 
-    #     PAD = "~"
-        
-    #     for line in data:
-    #         for ch in line:
-    #             self.vocab.add(ch)
-
-    #     PAD = "~"
-
-    #     for line in data:
-    #         line = PAD * self.k + line
-
-    #         for i in range(len(line) - self.k):
-    #             context = line[i:i+self.k]
-    #             next_char = line[i+self.k]
-
-    #             if context not in self.counts:
-    #                 self.counts[context] = {}
-
-    #             self.counts[context][next_char] = (
-    #                 self.counts[context].get(next_char, 0) + 1
-    #             )
-
-    # def run_pred(self, data):
-    #     preds = []
-    #     PAD = "~"
-
-    #     for inp in data:
-    #         inp = PAD * self.k + inp
-
-    #         prediction = None
-
-    #         # Backoff: try 5 → 4 → 3 → 2 → 1 grams
-    #         for k in range(self.k, 0, -1):
-    #             context = inp[-k:]
-
-    #             matches = {
-    #                 ctx: nxt
-    #                 for ctx, nxt in self.counts.items()
-    #                 if ctx.endswith(context)
-    #             }
-
-    #             if matches:
-    #                 agg = {}
-
-    #                 for nxt_dict in matches.values():
-    #                     for c, cnt in nxt_dict.items():
-    #                         agg[c] = agg.get(c, 0) + cnt
-
-    #                 next_chars = sorted(
-    #                     agg.items(),
-    #                     key=lambda x: x[1],
-    #                     reverse=True
-    #                 )
-
-    #                 prediction = ''.join(
-    #                     [c for c, _ in next_chars[:3]]
-    #                 )
-    #                 break
-
-    #         if prediction is None:
-    #             prediction = "e a"
-
-    #         preds.append(prediction)
-
-        return preds
     def run_train(self, data, work_dir):
         self.k = 5
         self.counts = {i: {} for i in range(1, self.k + 1)}
